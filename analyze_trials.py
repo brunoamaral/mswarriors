@@ -160,7 +160,7 @@ def create_sponsor_visualization(top_sponsors, save_path="charts/top_sponsors_ch
     ax.invert_yaxis()  # Top sponsor at the top
     ax.set_xlabel('Number of Clinical Trials', fontsize=12, fontweight='bold')
     ax.set_ylabel('Primary Sponsor', fontsize=12, fontweight='bold')
-    ax.set_title('Top 10 Sponsors of Multiple Sclerosis Clinical Trials\n(WHO ICTRP Database - 2,482 total trials, exported Sept 2025)', 
+    ax.set_title('Top 10 Sponsors of Multiple Sclerosis Clinical Trials (2001-2025)\n(WHO ICTRP Database - 2,482 total trials, exported Sept 2025)', 
                  fontsize=14, fontweight='bold', pad=20)
     
     # Add value labels on bars

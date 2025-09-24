@@ -204,7 +204,7 @@ def create_recruitment_timeline_chart(df, save_path="charts/recruitment_timeline
     
     ax.set_xlabel('Year', fontweight='bold')
     ax.set_ylabel('Number of Trials Registered', fontweight='bold')
-    ax.set_title('Multiple Sclerosis Clinical Trials Registration Timeline\n(2,482 total trials, WHO ICTRP, exported Sept 2025)', fontweight='bold', pad=20)
+    ax.set_title('Multiple Sclerosis Clinical Trials Registration Timeline (2001-2025)\n(2,482 total trials, WHO ICTRP, exported Sept 2025)', fontweight='bold', pad=20)
     ax.grid(True, alpha=0.3)
     
     # Highlight recent years

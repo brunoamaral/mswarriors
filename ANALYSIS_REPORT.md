@@ -4,6 +4,8 @@
 
 This analysis examines 2,482 Multiple Sclerosis clinical trials registered in the WHO International Clinical Trials Registry Platform (ICTRP) to identify the top sponsors and explore funding patterns in MS research.
 
+**Study Timeframe**: The analysis covers clinical trials registered from **February 4, 2001 to December 5, 2025** - spanning 24 years of MS research activity. Of the total trials, 929 have complete registration date information, with 51% of dated trials registered in the 2020s decade, demonstrating accelerating research activity in recent years.
+
 ## Key Findings
 
 ### Top 10 Sponsors of MS Clinical Trials
@@ -44,6 +46,20 @@ Our analysis benefits from excellent data quality:
 - **Global participation**: Top 10 countries represent 70.5% of trials
 - **Asian presence**: Japan (201 trials) and China (156 trials) are significant contributors
 
+### Temporal Distribution of Research Activity
+
+**Research Activity by Decade:**
+- **2000s (2000-2009)**: 100 trials (10.8% of dated trials)
+- **2010s (2010-2019)**: 355 trials (38.2% of dated trials)  
+- **2020s (2020-2025)**: 474 trials (51.0% of dated trials)
+
+This distribution reveals a dramatic acceleration in MS clinical trial activity, with more trials registered in the current decade (2020s) than in the previous two decades combined. This trend reflects increasing investment in MS research, improved understanding of the disease, and growing therapeutic opportunities.
+
+**Notable Milestones:**
+- **Earliest trial**: February 4, 2001 - "Effectiveness of A Nutritional Brain Metabolic Enhancer" (National Institute on Aging)
+- **Most recent trial**: December 5, 2025 - "Biomarkers of the Locus Coeruleus Nucleus" (University Hospital, Toulouse)
+- **Research span**: 24 years of continuous MS clinical research activity
+
 ### Funding Patterns
 
 #### By Sponsor Type
@@ -66,8 +82,11 @@ Our analysis benefits from excellent data quality:
 
 ![Recruitment Timeline Chart](charts/recruitment_timeline.png)
 
-- **474 trials registered since 2020**, showing continued investment in MS research
-- **75.7% are interventional trials**, indicating therapeutic development focus
+**24 Years of MS Research Evolution (2001-2025)**
+- **474 trials registered since 2020**, representing 51% of all dated trials
+- **Growing momentum**: The 2020s decade shows the highest research activity
+- **75.7% are interventional trials**, indicating strong therapeutic development focus
+- **Recent acceleration**: 44.9% of dated trials registered in just the last 5 years
 
 ## Notable Patterns
 
@@ -110,6 +129,8 @@ Our analysis benefits from excellent data quality:
 - Search criteria: "Multiple Sclerosis", all statuses and recruitment phases
 - Export date: September 23, 2025
 - Total records: 2,482 trials
+- **Date coverage**: February 4, 2001 to December 5, 2025 (24 years)
+- **Complete date information**: 929 trials (37.4% of total dataset)
 
 ### Analysis Approach
 - Primary focus on "Primary_sponsor" field
@@ -122,6 +143,8 @@ Our analysis benefits from excellent data quality:
 - Secondary sponsors not fully captured in primary analysis
 - Some trials may be registered in multiple registries
 - Historical data may have different registration standards
+- **Date completeness**: Only 37.4% of trials have complete registration date information
+- **Temporal bias**: Analysis may underrepresent very early MS research (pre-2001 registry era)
 
 ## Files Generated
 
