@@ -1,10 +1,14 @@
-# Multiple Sclerosis Clinical Trials Funding Analysis
+# Multiple Sclerosis Clinical Trials Funding Analysis: Cross-Registry Comparative Study
 
 ## Executive Summary
 
-This analysis examines 2,482 Multiple Sclerosis clinical trials registered in the WHO International Clinical Trials Registry Platform (ICTRP) to identify the top sponsors and explore funding patterns in MS research.
+This comprehensive analysis examines Multiple Sclerosis clinical trials funding patterns across two major registries: the WHO International Clinical Trials Registry Platform (ICTRP) with 2,482 trials and the European Union Clinical Trials Information System (CTIS) with 104 trials. This dual-registry approach provides both global and regional perspectives on MS research funding.
 
-**Study Timeframe**: The analysis covers clinical trials registered from **February 4, 2001 to December 5, 2025** - spanning 24 years of MS research activity. Of the total trials, 929 have complete registration date information, with 51% of dated trials registered in the 2020s decade, demonstrating accelerating research activity in recent years.
+**Study Timeframes**: 
+- **WHO ICTRP**: February 4, 2001 to December 5, 2025 (24 years)
+- **EU CTIS**: January 31, 2023 to August 6, 2025 (2.5 years)
+
+The analysis reveals distinct funding ecosystems between global and European regulatory landscapes, with zero overlap in top 10 sponsors and significantly different concentration patterns.
 
 ## Key Findings
 
@@ -88,12 +92,62 @@ This distribution reveals a dramatic acceleration in MS clinical trial activity,
 - **75.7% are interventional trials**, indicating strong therapeutic development focus
 - **Recent acceleration**: 44.9% of dated trials registered in just the last 5 years
 
+---
+
+## Cross-Registry Comparative Analysis
+
+### Registry Overview Comparison
+
+![Registry Comparison Chart](charts/registry_comparison.png)
+
+The side-by-side comparison reveals fundamentally different sponsor ecosystems:
+
+**WHO ICTRP (Global Registry)**
+- 2,482 trials across 24 years
+- 1,355 unique sponsors (highly fragmented)
+- Top sponsor: Eli Lilly (28 trials, 1.1%)
+- Mixed ecosystem: academic, pharmaceutical, government
+- US institutions prominent in leadership
+
+**EU CTIS (European Registry)**
+- 104 trials across 2.5 years
+- 50 unique sponsors (more concentrated)
+- Top sponsor: F. Hoffmann-La Roche AG (18 trials, 17.3%)
+- Pharmaceutical dominance (60.6% of trials)
+- European focus with major pharma players
+
+### Key Cross-Registry Insights
+
+![Sponsor Type Comparison Chart](charts/sponsor_type_comparison.png)
+
+**Concentration Patterns**
+- CTIS shows 15x higher concentration than WHO ICTRP
+- Zero overlap between top 10 sponsor lists
+- European registry reflects regional optimization
+
+**Sponsor Type Distribution**
+- CTIS: 60.6% pharmaceutical vs WHO's estimated ~35%
+- Academic institutions prominent in both but different players
+- Government funding more visible in WHO global dataset
+
+**Strategic Implications**
+- Different sponsors optimize for different regulatory regions
+- European trials show higher pharmaceutical investment concentration
+- Regulatory harmonization (CTIS) may attract focused industry investment
+
+---
+
 ## Notable Patterns
 
-### Pharmaceutical Industry Leadership
-- Eli Lilly emerges as the most active single sponsor
+### WHO ICTRP: Global Pharmaceutical Leadership
+- Eli Lilly emerges as the most active single sponsor globally
 - Wyeth (now Pfizer) shows historical commitment
 - Traditional pharma companies maintain consistent presence
+
+### EU CTIS: European Pharmaceutical Dominance
+- F. Hoffmann-La Roche AG leads European MS research
+- Novartis shows strong European commitment
+- Higher concentration suggests targeted regional strategies
 
 ### Academic Research Strength
 - Major universities and medical centers heavily represented
@@ -124,22 +178,40 @@ This distribution reveals a dramatic acceleration in MS clinical trial activity,
 
 ## Methodology
 
-### Data Source
-- WHO International Clinical Trials Registry Platform (ICTRP)
+### Data Sources
+
+**WHO International Clinical Trials Registry Platform (ICTRP)**
 - Search criteria: "Multiple Sclerosis", all statuses and recruitment phases
 - Export date: September 23, 2025
 - Total records: 2,482 trials
-- **Date coverage**: February 4, 2001 to December 5, 2025 (24 years)
-- **Complete date information**: 929 trials (37.4% of total dataset)
+- Date coverage: February 4, 2001 to December 5, 2025 (24 years)
+- Complete date information: 929 trials (37.4% of total dataset)
+
+**European Union Clinical Trials Information System (CTIS)**
+- Search criteria: "Multiple Sclerosis" condition
+- Export date: September 24, 2025
+- Total records: 104 trials
+- Date coverage: January 31, 2023 to August 6, 2025 (2.5 years)
+- Complete sponsor information: 100% coverage
 
 ### Analysis Approach
-- Primary focus on "Primary_sponsor" field
-- Secondary analysis of "Secondary_Sponsor" and "Source_Support" fields
-- Geographic, temporal, and categorical analysis
-- Data cleaning and standardization for sponsor names
+- Cross-registry comparative analysis methodology
+- Primary focus on "Primary_sponsor" and "Sponsor_Name" fields
+- Secondary analysis of sponsor types, geographic patterns, and temporal trends
+- Data cleaning and standardization for consistent sponsor names
+- Visualization of patterns across both global and regional datasets
+
+### Comparative Framework
+- Side-by-side analysis of top sponsors
+- Concentration pattern comparison
+- Sponsor type distribution analysis
+- Regional vs global funding pattern identification
+- Zero-overlap analysis between registry top performers
 
 ### Limitations
 - Sponsor names may vary in format across registries
+- CTIS represents newer regulatory framework with shorter timeframe
+- Potential dual registration of trials across both systems not analyzed
 - Secondary sponsors not fully captured in primary analysis
 - Some trials may be registered in multiple registries
 - Historical data may have different registration standards
@@ -181,6 +253,18 @@ All charts include comprehensive titles with:
 
 **Data Quality Assessment**
 ![Data Completeness](charts/sponsor_data_completeness.png)
+
+**Cross-Registry Analysis**
+![Registry Comparison](charts/registry_comparison.png)
+
+**Sponsor Type Comparison**
+![Sponsor Type Comparison](charts/sponsor_type_comparison.png)
+
+**EU CTIS Top Sponsors**
+![CTIS Top Sponsors](charts/ctis_top_sponsors.png)
+
+**CTIS Sponsor Types**
+![CTIS Sponsor Types](charts/ctis_sponsor_types.png)
 
 ## Technical Implementation
 
