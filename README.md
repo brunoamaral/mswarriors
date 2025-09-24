@@ -2,7 +2,9 @@
 
 Analysis of clinical trials registered on the WHO International Clinical Trials Registry Platform (ICTRP) to identify top sponsors and funding patterns in Multiple Sclerosis research.
 
-## Data Source
+## Data Sources
+
+### WHO ICTRP
 
 Data was extracted from the WHO International Clinical Trials Registry Platform (ICTRP) using the Trial Search portal (https://trialsearch.who.int/).
 
@@ -17,6 +19,15 @@ Data was extracted from the WHO International Clinical Trials Registry Platform 
 The exported files are:
 - `data/ICTRP-Results.xml` (XML format)
 - `data/ICTRP-Results.xlsx` (Excel format)
+
+### EU CTIS
+
+**Search Parameters:**
+- **Search URL**: https://euclinicaltrials.eu/search-for-clinical-trials/?lang=en
+- **Condition field**: multiple sclerosis
+
+
+
 
 ## Quick Start
 
