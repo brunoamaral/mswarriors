@@ -126,17 +126,49 @@ def create_ctis_sponsor_chart(top_sponsors, save_path="charts/ctis_top_sponsors.
     return fig
 
 def create_ctis_sponsor_type_chart(df, save_path="charts/ctis_sponsor_types.png"):
-    """Create visualization of sponsor types in CTIS."""
-    print("Creating CTIS sponsor type visualization...")
+    """Create visualization of sponsor types in CTIS with grouped categories."""
+    print("Creating CTIS sponsor type visualization with grouped categories...")
     
     ensure_charts_directory()
     
-    sponsor_types = df['Sponsor type'].value_counts()
+    # Get raw sponsor types
+    raw_sponsor_types = df['Sponsor type'].value_counts()
+    
+    # Group small categories and clean duplicates
+    grouped_types = {}
+    
+    for sponsor_type, count in raw_sponsor_types.items():
+        percentage = (count / len(df)) * 100
+        
+        # Clean up pharmaceutical duplicates
+        if 'Pharmaceutical company' in sponsor_type:
+            if 'Pharmaceutical Company' not in grouped_types:
+                grouped_types['Pharmaceutical Company'] = 0
+            grouped_types['Pharmaceutical Company'] += count
+        
+        # Clean up hospital/clinic duplicates  
+        elif 'Hospital/Clinic/Other health care facility' in sponsor_type:
+            if 'Hospital/Clinic/Healthcare' not in grouped_types:
+                grouped_types['Hospital/Clinic/Healthcare'] = 0
+            grouped_types['Hospital/Clinic/Healthcare'] += count
+            
+        # Group small categories (under 3%)
+        elif percentage < 3.0:
+            if 'Academic/Research/Other' not in grouped_types:
+                grouped_types['Academic/Research/Other'] = 0
+            grouped_types['Academic/Research/Other'] += count
+            
+        else:
+            grouped_types[sponsor_type] = count
+    
+    # Convert to series for consistent handling
+    import pandas as pd
+    sponsor_types = pd.Series(grouped_types).sort_values(ascending=False)
     
     fig, ax = plt.subplots(figsize=(10, 8))
     
-    # Create pie chart
-    colors = sns.color_palette("Set3", len(sponsor_types))
+    # Create pie chart with better colors
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'][:len(sponsor_types)]
     wedges, texts, autotexts = ax.pie(sponsor_types.values, labels=sponsor_types.index, 
                                       autopct='%1.1f%%', colors=colors, startangle=90)
     
@@ -144,14 +176,21 @@ def create_ctis_sponsor_type_chart(df, save_path="charts/ctis_sponsor_types.png"
     for autotext in autotexts:
         autotext.set_color('white')
         autotext.set_fontweight('bold')
-        autotext.set_fontsize(11)
+        autotext.set_fontsize(12)
     
     for text in texts:
-        text.set_fontsize(10)
+        text.set_fontsize(11)
         text.set_fontweight('bold')
     
-    ax.set_title('Distribution by Sponsor Type - EU CTIS MS Trials\n(131 total trials, exported Sept 2025)', 
+    ax.set_title('Distribution by Sponsor Type - EU CTIS MS Trials\n(104 total trials, Sept 2025)', 
                  fontweight='bold', fontsize=14, pad=20)
+    
+    # Add summary text
+    total_trials = len(df)
+    pharma_pct = (sponsor_types.get('Pharmaceutical Company', 0) / total_trials) * 100
+    textstr = f'Pharmaceutical dominance: {pharma_pct:.1f}% of trials'
+    ax.text(0.02, 0.02, textstr, transform=ax.transAxes, fontsize=10,
+            bbox=dict(boxstyle="round,pad=0.3", facecolor='lightgray', alpha=0.5))
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
