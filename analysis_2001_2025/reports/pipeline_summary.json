@@ -1,0 +1,26 @@
+{
+  "pipeline_execution": {
+    "timeframe": "2001-2025",
+    "execution_time": "2025-09-27 13:44:36",
+    "total_scripts": 3,
+    "successful": 3,
+    "failed": 0
+  },
+  "script_results": [
+    {
+      "script": "scripts/pipeline/analyze_clinicaltrials.py",
+      "description": "ClinicalTrials.gov Analysis (2001-2025)",
+      "status": "SUCCESS"
+    },
+    {
+      "script": "scripts/pipeline/analyze_ctis.py",
+      "description": "EU CTIS Analysis (2001-2025)",
+      "status": "SUCCESS"
+    },
+    {
+      "script": "scripts/pipeline/analyze_registry_comparison.py",
+      "description": "Registry Comparison Analysis (2001-2025)",
+      "status": "SUCCESS"
+    }
+  ]
+}

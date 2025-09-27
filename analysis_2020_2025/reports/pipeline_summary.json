@@ -1,0 +1,36 @@
+{
+  "pipeline_execution": {
+    "timeframe": "2020-2025",
+    "execution_time": "2025-09-27 13:44:01",
+    "total_scripts": 5,
+    "successful": 5,
+    "failed": 0
+  },
+  "script_results": [
+    {
+      "script": "scripts/pipeline/analyze_ictrp_2020_2025.py",
+      "description": "WHO ICTRP Analysis (2020-2025)",
+      "status": "SUCCESS"
+    },
+    {
+      "script": "scripts/pipeline/analyze_ctis_2020_2025.py",
+      "description": "EU CTIS Analysis (2020-2025)",
+      "status": "SUCCESS"
+    },
+    {
+      "script": "scripts/pipeline/analyze_clinicaltrials_2020_2025.py",
+      "description": "ClinicalTrials.gov Analysis (2020-2025)",
+      "status": "SUCCESS"
+    },
+    {
+      "script": "scripts/pipeline/create_cross_registry_charts_2020_2025.py",
+      "description": "Cross-Registry Comparison Charts",
+      "status": "SUCCESS"
+    },
+    {
+      "script": "scripts/pipeline/analyze_top_sponsors_recent_trials_2020_2025.py",
+      "description": "Top Sponsors & Recent Trials Analysis",
+      "status": "SUCCESS"
+    }
+  ]
+}
