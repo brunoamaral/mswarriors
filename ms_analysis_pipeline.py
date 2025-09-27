@@ -9,9 +9,9 @@ across three registries: ClinicalTrials.gov, WHO ICTRP, and EU CTIS.
 This pipeline supports both historical (2001-2025) and recent (2020-2025) timeframe analyses.
 
 Usage:
-    python ms_analysis_pipeline.py --timeframe 2020-2025
-    python ms_analysis_pipeline.py --timeframe 2001-2025
-    python ms_analysis_pipeline.py --timeframe both
+    uv run ms_analysis_pipeline.py --timeframe 2020-2025
+    uv run ms_analysis_pipeline.py --timeframe 2001-2025
+    uv run ms_analysis_pipeline.py --timeframe both
 
 Features:
 - Individual registry analyses with comprehensive charts
