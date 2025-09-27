@@ -327,6 +327,229 @@ def generate_summary_report_2020(df, sponsor_type_counts, sponsor_counts, yearly
     print(f"• Registry: EU CTIS (European Union)")
     print(f"• Note: Newest of the three registries analyzed")
 
+def create_geographic_distribution_chart(df):
+    """Create geographic distribution chart for EU CTIS data."""
+    print("Creating geographic distribution chart...")
+    ensure_output_directory()
+    
+    # Extract countries from EU member states
+    # CTIS covers EU member states, so all should be European countries
+    if 'Member State concerned' not in df.columns:
+        print("No member state data available")
+        return
+    
+    # Count member states
+    countries = []
+    for states_str in df['Member State concerned'].dropna():
+        if isinstance(states_str, str):
+            # Split multiple states if separated by comma or semicolon
+            state_list = [s.strip() for s in str(states_str).replace(';', ',').split(',')]
+            countries.extend(state_list)
+    
+    if not countries:
+        print("No country data available for EU CTIS")
+        return
+    
+    country_counts = pd.Series(countries).value_counts().head(15)
+    
+    fig, ax = plt.subplots(figsize=(14, 10))
+    
+    colors = sns.color_palette("Set3", len(country_counts))
+    y_pos = np.arange(len(country_counts))
+    
+    bars = ax.barh(y_pos, country_counts.values, color=colors, alpha=0.8, edgecolor='white', linewidth=1)
+    
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(country_counts.index, fontweight='bold')
+    ax.invert_yaxis()
+    ax.set_xlabel('Number of Studies', fontweight='bold', fontsize=12)
+    ax.set_title('Geographic Distribution of MS Clinical Trials\n(EU CTIS, Top EU Member States, 2020-2025)', 
+                fontweight='bold', fontsize=14, pad=20)
+    
+    # Add value labels
+    for bar, count in zip(bars, country_counts.values):
+        ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height()/2,
+                str(count), va='center', fontweight='bold', fontsize=10)
+    
+    ax.grid(axis='x', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+    
+    # Add summary
+    total_countries = len(pd.Series(countries).value_counts())
+    total_studies = sum(country_counts.values)
+    summary_text = f'EU Member States: {total_countries}\nTotal study locations: {total_studies}'
+    ax.text(0.02, 0.98, summary_text, transform=ax.transAxes, 
+            bbox=dict(boxstyle="round,pad=0.3", facecolor='lightblue', alpha=0.8),
+            verticalalignment='top', fontweight='bold')
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/ctis_geographic_distribution_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Geographic distribution chart saved: {output_path}")
+
+def create_phase_distribution_chart(df):
+    """Create phase distribution chart for EU CTIS data."""
+    print("Creating phase distribution chart...")
+    ensure_output_directory()
+    
+    # Look for phase information in Trial type or other relevant columns
+    if 'Trial type' not in df.columns:
+        print("No trial type data available for phase analysis")
+        return
+    
+    # Count trial types
+    phase_counts = df['Trial type'].value_counts()
+    
+    # Filter out very small categories (less than 2 studies)
+    phase_counts = phase_counts[phase_counts >= 1]  # Keep even single studies for CTIS due to small dataset
+    
+    if phase_counts.empty:
+        print("No trial type data for visualization")
+        return
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    colors = sns.color_palette("Set2", len(phase_counts))
+    y_pos = np.arange(len(phase_counts))
+    
+    bars = ax.barh(y_pos, phase_counts.values, color=colors, alpha=0.8, edgecolor='white', linewidth=1)
+    
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(phase_counts.index, fontweight='bold')
+    ax.invert_yaxis()
+    ax.set_xlabel('Number of Studies', fontweight='bold', fontsize=12)
+    ax.set_title('Trial Type Distribution\n(EU CTIS, 2020-2025)', fontweight='bold', fontsize=14, pad=20)
+    
+    # Add value labels
+    total = phase_counts.sum()
+    for bar, count in zip(bars, phase_counts.values):
+        percentage = (count / total) * 100
+        ax.text(bar.get_width() + total * 0.02, bar.get_y() + bar.get_height()/2,
+                f'{count} ({percentage:.1f}%)', va='center', fontweight='bold', fontsize=10)
+    
+    ax.grid(axis='x', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/ctis_phase_distribution_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Phase distribution chart saved: {output_path}")
+
+def create_recruitment_timeline_chart(df):
+    """Create recruitment timeline chart showing decision trends."""
+    print("Creating recruitment timeline chart...")
+    ensure_output_directory()
+    
+    # Group by year and month using Decision date
+    df_copy = df.copy()
+    df_copy['year'] = df_copy['application_date_dt'].dt.year
+    df_copy['year_month'] = df_copy['application_date_dt'].dt.to_period('M')
+    
+    # Remove missing dates
+    df_copy = df_copy.dropna(subset=['year_month'])
+    
+    if df_copy.empty:
+        print("No date data available for timeline")
+        return
+    
+    # Monthly counts
+    monthly_counts = df_copy['year_month'].value_counts().sort_index()
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    
+    # Monthly timeline
+    monthly_counts.plot(kind='line', ax=ax1, color='#2ca02c', marker='o', markersize=4, linewidth=2)
+    ax1.set_title('MS Clinical Trial Decisions Timeline\n(EU CTIS, 2020-2025)', 
+                  fontweight='bold', fontsize=14, pad=20)
+    ax1.set_ylabel('Monthly Decisions', fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.set_axisbelow(True)
+    
+    # Yearly summary
+    yearly_counts = df_copy['year'].value_counts().sort_index()
+    bars = ax2.bar(yearly_counts.index, yearly_counts.values, 
+                   color='#2ca02c', alpha=0.8, edgecolor='white', linewidth=2)
+    
+    ax2.set_title('Annual Decision Summary', fontweight='bold', fontsize=12)
+    ax2.set_ylabel('Annual Decisions', fontweight='bold')
+    ax2.set_xlabel('Year', fontweight='bold')
+    ax2.grid(axis='y', alpha=0.3)
+    ax2.set_axisbelow(True)
+    
+    # Add value labels on bars
+    for bar in bars:
+        height = bar.get_height()
+        ax2.text(bar.get_x() + bar.get_width()/2., height + 0.2,
+                f'{int(height)}', ha='center', va='bottom', fontweight='bold')
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/ctis_recruitment_timeline_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Recruitment timeline chart saved: {output_path}")
+
+def create_sponsor_data_completeness_chart(df):
+    """Create sponsor data completeness chart for EU CTIS."""
+    print("Creating sponsor data completeness chart...")
+    ensure_output_directory()
+    
+    # Calculate completeness rates for different fields
+    fields = {
+        'Sponsor/Co-Sponsors': 'Sponsor/Co-Sponsors',
+        'Sponsor type': 'Sponsor type',
+        'Member State concerned': 'Member State concerned',
+        'Trial type': 'Trial type',
+        'EudraCT number': 'EudraCT number'
+    }
+    
+    completeness_rates = {}
+    for field_name, column_name in fields.items():
+        if column_name in df.columns:
+            rate = (1 - df[column_name].isna().sum() / len(df)) * 100
+            completeness_rates[field_name] = rate
+    
+    if not completeness_rates:
+        print("No completeness data available")
+        return
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    fields_list = list(completeness_rates.keys())
+    rates_list = list(completeness_rates.values())
+    
+    colors = sns.color_palette("Set3", len(rates_list))
+    bars = ax.bar(fields_list, rates_list, color=colors, alpha=0.8, edgecolor='white', linewidth=2)
+    
+    ax.set_ylabel('Data Completeness (%)', fontweight='bold', fontsize=12)
+    ax.set_title('EU CTIS Data Completeness by Field\n(2020-2025 Period)', 
+                fontweight='bold', fontsize=14, pad=20)
+    ax.set_ylim(0, 105)
+    
+    # Add value labels on bars
+    for bar, rate in zip(bars, rates_list):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+                f'{rate:.1f}%', ha='center', va='bottom', fontweight='bold', fontsize=11)
+    
+    # Add horizontal reference lines
+    ax.axhline(y=100, color='green', linestyle='--', alpha=0.5, label='100% Complete')
+    ax.axhline(y=90, color='orange', linestyle='--', alpha=0.5, label='90% Threshold')
+    ax.axhline(y=75, color='red', linestyle='--', alpha=0.5, label='75% Threshold')
+    
+    ax.grid(axis='y', alpha=0.3)
+    ax.set_axisbelow(True)
+    ax.legend()
+    
+    # Rotate x-axis labels for better readability
+    plt.xticks(rotation=45, ha='right')
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/ctis_sponsor_data_completeness_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Sponsor data completeness chart saved: {output_path}")
+
 def main():
     """Run the complete EU CTIS 2020-2025 analysis."""
     print("🏥 EU CTIS MS Analysis - Recent Period (2020-2025)")
@@ -346,6 +569,12 @@ def main():
         
         # Create sponsor visualizations
         create_ctis_sponsor_charts_2020(sponsor_type_counts, sponsor_counts)
+        
+        # Create additional comprehensive charts
+        create_geographic_distribution_chart(df)
+        create_phase_distribution_chart(df)
+        create_recruitment_timeline_chart(df)
+        create_sponsor_data_completeness_chart(df)
         
         # Analyze yearly trends
         yearly_counts = analyze_yearly_trends_2020(df)

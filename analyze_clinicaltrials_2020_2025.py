@@ -358,6 +358,230 @@ def generate_summary_report_2020(df, sponsor_counts, class_counts, yearly_counts
     print(f"• Registry: ClinicalTrials.gov (US-focused)")
     print(f"• COVID-19 impact period included")
 
+def create_geographic_distribution_chart(df):
+    """Create geographic distribution chart for ClinicalTrials.gov data."""
+    print("Creating geographic distribution chart...")
+    ensure_output_directory()
+    
+    # Extract countries from LocationCountry column
+    countries = []
+    for countries_str in df['LocationCountry'].dropna():
+        if isinstance(countries_str, str):
+            # Split multiple countries by comma and clean
+            country_list = [c.strip() for c in str(countries_str).split(',')]
+            countries.extend(country_list)
+    
+    if not countries:
+        print("No country data available")
+        return
+    
+    # Count countries and get top 15
+    country_counts = pd.Series(countries).value_counts().head(15)
+    
+    fig, ax = plt.subplots(figsize=(14, 10))
+    
+    colors = sns.color_palette("plasma", len(country_counts))
+    y_pos = np.arange(len(country_counts))
+    
+    bars = ax.barh(y_pos, country_counts.values, color=colors, alpha=0.8, edgecolor='white', linewidth=1)
+    
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(country_counts.index, fontweight='bold')
+    ax.invert_yaxis()
+    ax.set_xlabel('Number of Studies', fontweight='bold', fontsize=12)
+    ax.set_title('Geographic Distribution of MS Clinical Trials\n(ClinicalTrials.gov, Top 15 Countries, 2020-2025)', 
+                fontweight='bold', fontsize=14, pad=20)
+    
+    # Add value labels
+    for bar, count in zip(bars, country_counts.values):
+        ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2,
+                str(count), va='center', fontweight='bold', fontsize=10)
+    
+    ax.grid(axis='x', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+    
+    # Add summary
+    total_countries = len(pd.Series(countries).value_counts())
+    total_studies = sum(country_counts.values)
+    summary_text = f'Showing top 15 of {total_countries} countries\nTotal study locations: {total_studies}'
+    ax.text(0.02, 0.98, summary_text, transform=ax.transAxes, 
+            bbox=dict(boxstyle="round,pad=0.3", facecolor='lightcoral', alpha=0.8),
+            verticalalignment='top', fontweight='bold')
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/clinicaltrials_geographic_distribution_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Geographic distribution chart saved: {output_path}")
+
+def create_phase_distribution_chart(df):
+    """Create phase distribution chart for ClinicalTrials.gov data."""
+    print("Creating phase distribution chart...")
+    ensure_output_directory()
+    
+    # Analyze phase distribution
+    phase_counts = df['Phase'].value_counts()
+    
+    # Clean up phase labels
+    phase_mapping = {
+        'Phase 1': 'Phase I',
+        'Phase 2': 'Phase II', 
+        'Phase 3': 'Phase III',
+        'Phase 4': 'Phase IV',
+        'Phase 1/Phase 2': 'Phase I/II',
+        'Phase 2/Phase 3': 'Phase II/III',
+        'Not Applicable': 'Not Applicable',
+        'Early Phase 1': 'Early Phase I'
+    }
+    
+    # Apply mapping and handle missing values
+    clean_phases = df['Phase'].fillna('Not Specified').replace(phase_mapping)
+    phase_counts_clean = clean_phases.value_counts()
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Create horizontal bar chart for better readability
+    colors = sns.color_palette("Set2", len(phase_counts_clean))
+    y_pos = np.arange(len(phase_counts_clean))
+    
+    bars = ax.barh(y_pos, phase_counts_clean.values, color=colors, alpha=0.8, edgecolor='white', linewidth=1)
+    
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(phase_counts_clean.index, fontweight='bold')
+    ax.invert_yaxis()
+    ax.set_xlabel('Number of Studies', fontweight='bold', fontsize=12)
+    ax.set_title('Clinical Trial Phase Distribution\n(ClinicalTrials.gov, 2020-2025)', fontweight='bold', fontsize=14, pad=20)
+    
+    # Add value labels
+    total = phase_counts_clean.sum()
+    for bar, count in zip(bars, phase_counts_clean.values):
+        percentage = (count / total) * 100
+        ax.text(bar.get_width() + total * 0.01, bar.get_y() + bar.get_height()/2,
+                f'{count} ({percentage:.1f}%)', va='center', fontweight='bold', fontsize=10)
+    
+    ax.grid(axis='x', alpha=0.3, linestyle='--')
+    ax.set_axisbelow(True)
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/clinicaltrials_phase_distribution_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Phase distribution chart saved: {output_path}")
+
+def create_recruitment_timeline_chart(df):
+    """Create recruitment timeline chart showing study start trends."""
+    print("Creating recruitment timeline chart...")
+    ensure_output_directory()
+    
+    # Group by year and month using StudyFirstPostDate
+    df_copy = df.copy()
+    df_copy['year'] = df_copy['StudyFirstPostDate_dt'].dt.year
+    df_copy['year_month'] = df_copy['StudyFirstPostDate_dt'].dt.to_period('M')
+    
+    # Remove missing dates
+    df_copy = df_copy.dropna(subset=['year_month'])
+    
+    if df_copy.empty:
+        print("No date data available for timeline")
+        return
+    
+    # Monthly counts
+    monthly_counts = df_copy['year_month'].value_counts().sort_index()
+    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+    
+    # Monthly timeline
+    monthly_counts.plot(kind='line', ax=ax1, color='#1f77b4', marker='o', markersize=4, linewidth=2)
+    ax1.set_title('MS Clinical Trial Registrations Timeline\n(ClinicalTrials.gov, 2020-2025)', 
+                  fontweight='bold', fontsize=14, pad=20)
+    ax1.set_ylabel('Monthly Registrations', fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.set_axisbelow(True)
+    
+    # Yearly summary
+    yearly_counts = df_copy['year'].value_counts().sort_index()
+    bars = ax2.bar(yearly_counts.index, yearly_counts.values, 
+                   color='#1f77b4', alpha=0.8, edgecolor='white', linewidth=2)
+    
+    ax2.set_title('Annual Registration Summary', fontweight='bold', fontsize=12)
+    ax2.set_ylabel('Annual Registrations', fontweight='bold')
+    ax2.set_xlabel('Year', fontweight='bold')
+    ax2.grid(axis='y', alpha=0.3)
+    ax2.set_axisbelow(True)
+    
+    # Add value labels on bars
+    for bar in bars:
+        height = bar.get_height()
+        ax2.text(bar.get_x() + bar.get_width()/2., height + 5,
+                f'{int(height)}', ha='center', va='bottom', fontweight='bold')
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/clinicaltrials_recruitment_timeline_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Recruitment timeline chart saved: {output_path}")
+
+def create_sponsor_data_completeness_chart(df):
+    """Create sponsor data completeness chart for ClinicalTrials.gov."""
+    print("Creating sponsor data completeness chart...")
+    ensure_output_directory()
+    
+    # Calculate completeness rates for different fields
+    fields = {
+        'Lead Sponsor Name': 'LeadSponsorName',
+        'Lead Sponsor Class': 'LeadSponsorClass',
+        'Location Country': 'LocationCountry',
+        'Phase': 'Phase',
+        'Overall Status': 'OverallStatus',
+        'Study Type': 'StudyType'
+    }
+    
+    completeness_rates = {}
+    for field_name, column_name in fields.items():
+        if column_name in df.columns:
+            rate = (1 - df[column_name].isna().sum() / len(df)) * 100
+            completeness_rates[field_name] = rate
+    
+    if not completeness_rates:
+        print("No completeness data available")
+        return
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    fields_list = list(completeness_rates.keys())
+    rates_list = list(completeness_rates.values())
+    
+    colors = sns.color_palette("plasma", len(rates_list))
+    bars = ax.bar(fields_list, rates_list, color=colors, alpha=0.8, edgecolor='white', linewidth=2)
+    
+    ax.set_ylabel('Data Completeness (%)', fontweight='bold', fontsize=12)
+    ax.set_title('ClinicalTrials.gov Data Completeness by Field\n(2020-2025 Period)', 
+                fontweight='bold', fontsize=14, pad=20)
+    ax.set_ylim(0, 105)
+    
+    # Add value labels on bars
+    for bar, rate in zip(bars, rates_list):
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
+                f'{rate:.1f}%', ha='center', va='bottom', fontweight='bold', fontsize=11)
+    
+    # Add horizontal reference lines
+    ax.axhline(y=100, color='green', linestyle='--', alpha=0.5, label='100% Complete')
+    ax.axhline(y=90, color='orange', linestyle='--', alpha=0.5, label='90% Threshold')
+    ax.axhline(y=75, color='red', linestyle='--', alpha=0.5, label='75% Threshold')
+    
+    ax.grid(axis='y', alpha=0.3)
+    ax.set_axisbelow(True)
+    ax.legend()
+    
+    # Rotate x-axis labels for better readability
+    plt.xticks(rotation=45, ha='right')
+    
+    plt.tight_layout()
+    output_path = "analysis_2020_2025/charts/clinicaltrials_sponsor_data_completeness_2020_2025.png"
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Sponsor data completeness chart saved: {output_path}")
+
 def main():
     """Run the complete ClinicalTrials.gov 2020-2025 analysis."""
     print("🏥 ClinicalTrials.gov MS Analysis - Recent Period (2020-2025)")
@@ -380,6 +604,12 @@ def main():
         # Create visualizations
         create_clinicaltrials_sponsor_chart_2020(sponsor_counts)
         create_sponsor_class_chart_2020(class_counts)
+        
+        # Create additional comprehensive charts
+        create_geographic_distribution_chart(df)
+        create_phase_distribution_chart(df)
+        create_recruitment_timeline_chart(df)
+        create_sponsor_data_completeness_chart(df)
         
         # Analyze yearly trends
         yearly_counts = analyze_yearly_trends_2020(df)
