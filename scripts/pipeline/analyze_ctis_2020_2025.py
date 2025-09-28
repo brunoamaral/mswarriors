@@ -75,20 +75,26 @@ def analyze_ctis_sponsors_2020(df):
     
     # Group small sponsor types to reduce clutter
     def group_sponsor_type(sponsor_type):
-        """Group small sponsor types for cleaner visualization."""
+        """Group CTIS sponsor types into broader categories for cleaner visualization."""
         if pd.isna(sponsor_type):
             return 'Unknown'
         
-        sponsor_type = str(sponsor_type).strip()
+        sponsor_type = str(sponsor_type).strip().lower()
         
-        # Major categories (keep separate)
-        major_categories = {
-            'Commercial sponsor': 'Commercial',
-            'Non-commercial sponsor': 'Academic/Non-commercial'
-        }
-        
-        # Return grouped category or original if major
-        return major_categories.get(sponsor_type, 'Other/Mixed')
+        # Map actual CTIS categories to broader groups
+        if 'pharmaceutical company' in sponsor_type:
+            return 'Industry'
+        elif any(keyword in sponsor_type for keyword in [
+            'hospital', 'clinic', 'health care facility', 'educational institution',
+            'laboratory', 'research', 'testing facility'
+        ]):
+            return 'Academic/Medical'
+        elif any(keyword in sponsor_type for keyword in [
+            'patient organisation', 'patient association', 'health care'
+        ]):
+            return 'Non-profit/Patient'
+        else:
+            return 'Other'
 
     # Apply grouping
     df['grouped_sponsor_type'] = df['Sponsor type'].apply(group_sponsor_type)
@@ -124,13 +130,13 @@ def analyze_ctis_sponsors_2020(df):
     
     return sponsor_type_counts, sponsor_counts
 
-def create_ctis_sponsor_charts_2020(sponsor_type_counts, sponsor_counts):
-    """Create sponsor visualizations for EU CTIS 2020-2025."""
-    print("Creating EU CTIS sponsor charts (2020-2025)...")
+def create_ctis_sponsor_classes_charts_2020(sponsor_type_counts, sponsor_counts):
+    """Create sponsor class visualizations for EU CTIS 2020-2025."""
+    print("Creating EU CTIS sponsor classes charts (2020-2025)...")
     
     ensure_output_directory()
     
-    # 1. Sponsor Type Distribution (Bar Chart)
+    # 1. Sponsor Class Distribution (Bar Chart)
     fig, ax = plt.subplots(figsize=(12, 8))
     
     # Sort by count for better visualization
@@ -145,7 +151,7 @@ def create_ctis_sponsor_charts_2020(sponsor_type_counts, sponsor_counts):
     ax.set_yticks(y_pos)
     ax.set_yticklabels(sorted_types.index, fontsize=11, fontweight='bold')
     ax.set_xlabel('Number of Clinical Trials', fontweight='bold', fontsize=12)
-    ax.set_title('Sponsor Type Distribution - EU CTIS MS Trials\n(Recent Period: 2020-2025, effectively 2023-2025)', 
+    ax.set_title('Sponsor Class Distribution - EU CTIS MS Trials\n(Recent Period: 2020-2025, effectively 2023-2025)', 
                  fontweight='bold', fontsize=14, pad=20)
     
     # Add value labels on bars with percentages
@@ -173,8 +179,8 @@ def create_ctis_sponsor_charts_2020(sponsor_type_counts, sponsor_counts):
             bbox=dict(boxstyle="round,pad=0.4", facecolor='lightblue', alpha=0.8))
     
     plt.tight_layout()
-    plt.savefig("analysis_2020_2025/charts/ctis_sponsor_types_2020_2025.png", dpi=300, bbox_inches='tight')
-    print("EU CTIS sponsor types chart saved as: analysis_2020_2025/charts/ctis_sponsor_types_2020_2025.png")
+    plt.savefig("analysis_2020_2025/charts/ctis_sponsor_classes_2020_2025.png", dpi=300, bbox_inches='tight')
+    print("EU CTIS sponsor classes chart saved as: analysis_2020_2025/charts/ctis_sponsor_classes_2020_2025.png")
     
     # 2. Top Individual Sponsors (if we have enough data)
     if len(sponsor_counts) > 0:
@@ -568,7 +574,7 @@ def main():
         sponsor_type_counts, sponsor_counts = analyze_ctis_sponsors_2020(df)
         
         # Create sponsor visualizations
-        create_ctis_sponsor_charts_2020(sponsor_type_counts, sponsor_counts)
+        create_ctis_sponsor_classes_charts_2020(sponsor_type_counts, sponsor_counts)
         
         # Create additional comprehensive charts
         create_geographic_distribution_chart(df)
@@ -584,7 +590,7 @@ def main():
         
         print(f"\n✅ EU CTIS analysis (2020-2025) completed!")
         print(f"Generated files:")
-        print(f"  • analysis_2020_2025/charts/ctis_sponsor_types_2020_2025.png")
+        print(f"  • analysis_2020_2025/charts/ctis_sponsor_classes_2020_2025.png")
         print(f"  • analysis_2020_2025/charts/ctis_top_sponsors_2020_2025.png")
         print(f"  • analysis_2020_2025/charts/ctis_yearly_trends_2020_2025.png")
         print(f"\n📝 Focused on EU CTIS operational period!")
