@@ -97,6 +97,90 @@ def analyze_ictrp_sponsors_2020(df):
     
     return sponsor_counts
 
+def classify_ictrp_sponsor_type(sponsor_name):
+    """
+    Classify ICTRP sponsor into categories based on sponsor name patterns.
+    Similar to ClinicalTrials.gov sponsor classes.
+    """
+    if pd.isna(sponsor_name) or sponsor_name == '':
+        return 'Unknown'
+    
+    sponsor_lower = str(sponsor_name).lower().strip()
+    
+    # Academic/Medical keywords (check first to avoid misclassification)
+    academic_keywords = [
+        'university', 'college', 'school', 'hospital', 'medical center', 
+        'institute', 'centre', 'center', 'clinic', 'foundation', 'research',
+        'universidad', 'université', 'università', 'universidade', 'universitaire',
+        'ospedale', 'clinique', 'klinik', 'hopital', 'ziekenhuis', 'cancer center',
+        'mayo clinic', 'cleveland clinic', 'johns hopkins', 'memorial sloan'
+    ]
+    
+    # Government/NIH keywords
+    government_keywords = [
+        'national institute', 'ministry', 'department', 'government', 
+        'public health', 'nih', 'ninds', 'niddk', 'veterans', 'va medical',
+        'health service', 'nhs', 'ministério', 'ministère', 'ministerio'
+    ]
+    
+    # Industry/Commercial keywords (check after academic to avoid conflicts)
+    industry_keywords = [
+        'pharmaceutical', 'pharma', 'biotechnology', 'biotech', 'inc.', 'corporation', 
+        'corp', 'ltd', 'limited', 'ag', 'sa', 'spa', 'gmbh', 'llc', 'company',
+        'novartis', 'roche', 'pfizer', 'merck', 'lilly', 'bristol', 'johnson', 
+        'biogen', 'sanofi', 'glaxo', 'abbvie', 'bayer', 'amgen', 'gilead'
+    ]
+    
+    # Check for academic/medical first (to avoid hospital/center being classified as industry)
+    for keyword in academic_keywords:
+        if keyword in sponsor_lower:
+            return 'Other'
+            
+    # Check for government/NIH
+    for keyword in government_keywords:
+        if keyword in sponsor_lower:
+            return 'NIH'
+    
+    # Check for industry last
+    for keyword in industry_keywords:
+        if keyword in sponsor_lower:
+            return 'Industry'
+    
+    return 'Other'
+
+def analyze_ictrp_sponsor_classes_2020(df):
+    """Analyze sponsor classes in 2020-2025 WHO ICTRP data."""
+    print(f"\n=== WHO ICTRP SPONSOR CLASS ANALYSIS (2020-2025) ===")
+    
+    # Classify sponsors
+    df['sponsor_class'] = df['Primary_sponsor'].apply(classify_ictrp_sponsor_type)
+    
+    # Analyze sponsor classes
+    class_counts = df['sponsor_class'].value_counts()
+    unique_classes = df['sponsor_class'].nunique()
+    
+    print(f"\nSponsor Class Statistics:")
+    print(f"• Total sponsor classes: {unique_classes}")
+    
+    print(f"\nSponsor Class Distribution in WHO ICTRP (2020-2025):")
+    print("-" * 60)
+    for i, (sclass, count) in enumerate(class_counts.items(), 1):
+        percentage = (count / len(df)) * 100
+        print(f"{i}. {sclass:<15} {count:3d} trials ({percentage:.1f}%)")
+    
+    # Top sponsors by class
+    print(f"\nTop 3 Sponsors by Class:")
+    print("-" * 60)
+    for sclass in ['Industry', 'Other', 'NIH']:
+        if sclass in df['sponsor_class'].values:
+            class_df = df[df['sponsor_class'] == sclass]
+            top_sponsors = class_df['Primary_sponsor'].value_counts().head(3)
+            print(f"\n{sclass}:")
+            for sponsor, count in top_sponsors.items():
+                print(f"  • {sponsor}: {count} trials")
+    
+    return class_counts
+
 def create_ictrp_sponsor_chart_2020(sponsor_counts, save_path="analysis_2020_2025/charts/ictrp_top_sponsors_2020_2025.png"):
     """Create top sponsors visualization for WHO ICTRP 2020-2025."""
     print("Creating WHO ICTRP top sponsors chart (2020-2025)...")
@@ -143,6 +227,72 @@ def create_ictrp_sponsor_chart_2020(sponsor_counts, save_path="analysis_2020_202
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     print(f"WHO ICTRP sponsors chart (2020-2025) saved as: {save_path}")
+    
+    return fig
+
+def create_ictrp_sponsor_classes_chart_2020(class_counts, save_path="analysis_2020_2025/charts/ictrp_sponsor_classes_2020_2025.png"):
+    """Create sponsor classes visualization for WHO ICTRP 2020-2025."""
+    print("Creating WHO ICTRP sponsor classes chart (2020-2025)...")
+    
+    ensure_output_directory()
+    
+    # Create pie chart for sponsor classes
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    
+    # Left: Pie chart
+    colors = sns.color_palette("Set3", len(class_counts))
+    wedges, texts, autotexts = ax1.pie(class_counts.values, labels=class_counts.index, 
+                                       autopct='%1.1f%%', colors=colors, startangle=90,
+                                       explode=[0.05 if cls == 'Industry' else 0 for cls in class_counts.index])
+    
+    # Customize pie chart text
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+        autotext.set_fontsize(12)
+    
+    for text in texts:
+        text.set_fontsize(11)
+        text.set_fontweight('bold')
+    
+    ax1.set_title('Sponsor Class Distribution\nWHO ICTRP MS Trials (2020-2025)', 
+                  fontweight='bold', fontsize=14, pad=20)
+    
+    # Right: Bar chart with detailed breakdown
+    sorted_classes = class_counts.sort_values(ascending=True)
+    y_pos = np.arange(len(sorted_classes))
+    
+    bars = ax2.barh(y_pos, sorted_classes.values, color=colors)
+    ax2.set_yticks(y_pos)
+    ax2.set_yticklabels(sorted_classes.index)
+    ax2.set_xlabel('Number of Clinical Trials', fontweight='bold', fontsize=12)
+    ax2.set_title('Sponsor Classes - Detailed Count\nWHO ICTRP MS Trials (2020-2025)', 
+                  fontweight='bold', fontsize=14, pad=20)
+    
+    # Add value labels on bars
+    total_studies = class_counts.sum()
+    for bar, count, cls in zip(bars, sorted_classes.values, sorted_classes.index):
+        percentage = (count / total_studies) * 100
+        ax2.text(bar.get_width() + 2, bar.get_y() + bar.get_height()/2,
+                f'{count} ({percentage:.1f}%)', va='center', fontweight='bold', fontsize=10)
+    
+    # Add grid for better readability
+    ax2.grid(axis='x', alpha=0.3)
+    ax2.set_axisbelow(True)
+    
+    # Add summary statistics
+    industry_pct = (class_counts.get('Industry', 0) / total_studies) * 100
+    academic_pct = (class_counts.get('Other', 0) / total_studies) * 100
+    govt_pct = (class_counts.get('NIH', 0) / total_studies) * 100
+    
+    textstr = f'Industry: {industry_pct:.1f}%\\nAcademic/Other: {academic_pct:.1f}%\\nGovt/NIH: {govt_pct:.1f}%\\nTotal: {total_studies:,} studies'
+    props = dict(boxstyle='round', facecolor='lightblue', alpha=0.7)
+    ax2.text(0.02, 0.98, textstr, transform=ax2.transAxes, fontsize=10,
+             verticalalignment='top', bbox=props)
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    print(f"WHO ICTRP sponsor classes chart (2020-2025) saved as: {save_path}")
     
     return fig
 
@@ -467,8 +617,12 @@ def main():
         # Analyze sponsors
         sponsor_counts = analyze_ictrp_sponsors_2020(df)
         
-        # Create sponsor visualization
+        # Analyze sponsor classes
+        sponsor_classes = analyze_ictrp_sponsor_classes_2020(df)
+        
+        # Create sponsor visualizations
         create_ictrp_sponsor_chart_2020(sponsor_counts)
+        create_ictrp_sponsor_classes_chart_2020(sponsor_classes)
         
         # Create additional comprehensive charts
         create_geographic_distribution_chart(df)
@@ -485,6 +639,7 @@ def main():
         print(f"\n✅ WHO ICTRP analysis (2020-2025) completed!")
         print(f"Generated files:")
         print(f"  • analysis_2020_2025/charts/ictrp_top_sponsors_2020_2025.png")
+        print(f"  • analysis_2020_2025/charts/ictrp_sponsor_classes_2020_2025.png") 
         print(f"  • analysis_2020_2025/charts/ictrp_yearly_trends_2020_2025.png")
         print(f"\n📝 Focused on recent MS clinical trial landscape!")
         
