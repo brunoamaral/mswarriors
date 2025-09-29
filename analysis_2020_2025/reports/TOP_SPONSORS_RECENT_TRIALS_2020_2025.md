@@ -1,7 +1,7 @@
 # Top 5 Sponsors and Their Most Recent Trials (2020-2025)
 ======================================================================
 
-**Analysis Date:** September 27, 2025
+**Analysis Date:** September 28, 2025
 **Time Period:** January 1, 2020 - December 31, 2025
 **Registries:** ClinicalTrials.gov, WHO ICTRP, EU CTIS
 
