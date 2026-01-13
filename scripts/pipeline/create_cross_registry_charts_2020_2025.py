@@ -9,7 +9,48 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import os
+import glob
 from datetime import datetime
+
+def get_latest_clinicaltrials_file():
+    """Find the most recent clinicaltrialsgov_ms_*.csv file in data directory."""
+    pattern = "data/clinicaltrialsgov_ms_*.csv"
+    files = glob.glob(pattern)
+    if not files:
+        raise FileNotFoundError(f"No files matching {pattern} found")
+    # Sort by filename (date is in filename) and get the latest
+    latest_file = sorted(files)[-1]
+    print(f"Using data file: {latest_file}")
+    return latest_file
+
+def normalize_clinicaltrials_columns(df):
+    """
+    Normalize column names from new ClinicalTrials.gov API format to expected format.
+    New API uses different column names than the old format.
+    """
+    column_mapping = {
+        'First Posted': 'StudyFirstPostDate',
+        'Sponsor': 'LeadSponsorName',
+        'Funder Type': 'LeadSponsorClass',
+        'Phases': 'Phase',
+        'NCT Number': 'NCTId',
+        'Study Title': 'BriefTitle',
+        'Study Status': 'OverallStatus',
+        'Conditions': 'Condition',
+        'Study Type': 'StudyType',
+        'Enrollment': 'EnrollmentCount',
+        'Start Date': 'StartDate',
+        'Completion Date': 'CompletionDate',
+        'Locations': 'LocationCountry',
+    }
+    
+    # Rename columns that exist in the dataframe
+    rename_dict = {old: new for old, new in column_mapping.items() if old in df.columns}
+    if rename_dict:
+        df = df.rename(columns=rename_dict)
+        print(f"Normalized {len(rename_dict)} column names to expected format")
+    
+    return df
 
 def ensure_output_directory():
     """Create output directory if it doesn't exist."""
@@ -18,23 +59,34 @@ def ensure_output_directory():
         os.makedirs(output_dir)
     return output_dir
 
+def get_latest_ctis_file():
+    """Find the most recent CTIS_trials_*.csv file in data directory."""
+    pattern = "data/CTIS_trials_*.csv"
+    files = glob.glob(pattern)
+    if not files:
+        raise FileNotFoundError(f"No files matching {pattern} found")
+    latest_file = sorted(files)[-1]
+    print(f"Using CTIS file: {latest_file}")
+    return latest_file
+
 def load_all_filtered_data():
     """Load and filter all three datasets to 2020-2025 timeframe."""
     print("Loading all registry datasets for comparison...")
     
     # Load ClinicalTrials.gov data
     print("- Loading ClinicalTrials.gov data...")
-    ct_df = pd.read_csv("data/clinicaltrials_ms_20250925.csv")
+    ct_df = pd.read_csv(get_latest_clinicaltrials_file())
+    ct_df = normalize_clinicaltrials_columns(ct_df)
     ct_df['StudyFirstPostDate_dt'] = pd.to_datetime(ct_df['StudyFirstPostDate'], errors='coerce')
     
     # Load WHO ICTRP data  
     print("- Loading WHO ICTRP data...")
-    ictrp_df = pd.read_excel("data/ICTRP-Results.xlsx")
+    ictrp_df = pd.read_xml("data/ICTRP-Results.xml")
     ictrp_df['Date_registration_dt'] = pd.to_datetime(ictrp_df['Date_registration'], errors='coerce')
     
     # Load EU CTIS data
     print("- Loading EU CTIS data...")
-    ctis_df = pd.read_csv("data/CTIS_trials_20250924.csv")
+    ctis_df = pd.read_csv(get_latest_ctis_file())
     ctis_df['Decision_date_dt'] = pd.to_datetime(ctis_df['Decision date'], errors='coerce')
     
     # Filter to 2020-2025

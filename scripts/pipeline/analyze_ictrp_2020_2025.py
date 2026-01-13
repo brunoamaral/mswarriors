@@ -26,7 +26,7 @@ def load_and_filter_ictrp_data():
     Filter: January 1, 2020 to December 31, 2025
     """
     print("Loading WHO ICTRP data...")
-    df = pd.read_excel("data/ICTRP-Results.xlsx")
+    df = pd.read_xml("data/ICTRP-Results.xml")
     print(f"Original dataset: {len(df)} studies")
     
     # 2020-2025 timeframe boundaries

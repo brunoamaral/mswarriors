@@ -10,7 +10,48 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import os
+import glob
 from datetime import datetime, date
+
+def get_latest_clinicaltrials_file():
+    """Find the most recent clinicaltrialsgov_ms_*.csv file in data directory."""
+    pattern = "data/clinicaltrialsgov_ms_*.csv"
+    files = glob.glob(pattern)
+    if not files:
+        raise FileNotFoundError(f"No files matching {pattern} found")
+    # Sort by filename (date is in filename) and get the latest
+    latest_file = sorted(files)[-1]
+    print(f"Using data file: {latest_file}")
+    return latest_file
+
+def normalize_clinicaltrials_columns(df):
+    """
+    Normalize column names from new ClinicalTrials.gov API format to expected format.
+    New API uses different column names than the old format.
+    """
+    column_mapping = {
+        'First Posted': 'StudyFirstPostDate',
+        'Sponsor': 'LeadSponsorName',
+        'Funder Type': 'LeadSponsorClass',
+        'Phases': 'Phase',
+        'NCT Number': 'NCTId',
+        'Study Title': 'BriefTitle',
+        'Study Status': 'OverallStatus',
+        'Conditions': 'Condition',
+        'Study Type': 'StudyType',
+        'Enrollment': 'EnrollmentCount',
+        'Start Date': 'StartDate',
+        'Completion Date': 'CompletionDate',
+        'Locations': 'LocationCountry',
+    }
+    
+    # Rename columns that exist in the dataframe
+    rename_dict = {old: new for old, new in column_mapping.items() if old in df.columns}
+    if rename_dict:
+        df = df.rename(columns=rename_dict)
+        print(f"Normalized {len(rename_dict)} column names to expected format")
+    
+    return df
 
 def ensure_charts_directory():
     """Create charts directory if it doesn't exist."""
@@ -26,7 +67,8 @@ def load_and_filter_clinicaltrials_data():
     Filter: Feb 4, 2001 to Dec 5, 2025 (matching WHO ICTRP exactly)
     """
     print("Loading ClinicalTrials.gov data...")
-    df = pd.read_csv("data/clinicaltrials_ms_20250925.csv")
+    df = pd.read_csv(get_latest_clinicaltrials_file())
+    df = normalize_clinicaltrials_columns(df)
     print(f"Original dataset: {len(df)} studies")
     
     # WHO ICTRP timeframe boundaries

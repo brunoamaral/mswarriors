@@ -10,7 +10,18 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import os
+import glob
 from datetime import datetime
+
+def get_latest_ctis_file():
+    """Find the most recent CTIS_trials_*.csv file in data directory."""
+    pattern = "data/CTIS_trials_*.csv"
+    files = glob.glob(pattern)
+    if not files:
+        raise FileNotFoundError(f"No files matching {pattern} found")
+    latest_file = sorted(files)[-1]
+    print(f"Using CTIS file: {latest_file}")
+    return latest_file
 
 def ensure_charts_directory():
     """Create charts directory if it doesn't exist."""
@@ -23,7 +34,7 @@ def ensure_charts_directory():
 def load_ctis_data():
     """Load the CTIS data and explore its structure."""
     print("Loading CTIS data...")
-    df = pd.read_csv("data/CTIS_trials_20250924.csv")
+    df = pd.read_csv(get_latest_ctis_file())
     print(f"Loaded {len(df)} trials from CTIS")
     return df
 
